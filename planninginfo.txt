@@ -1,0 +1,3 @@
+f1blogcoursework
+
+news blog: news, photos, options to comment (anonymously)
