@@ -1,3 +1,13 @@
 f1blogcoursework
 
 news blog: news, photos, options to comment (anonymously)
+
+
+todo:
+
+    client:
+    - add right-hand sidebar
+    - design post/comment viewer
+
+    server:
+    - 
