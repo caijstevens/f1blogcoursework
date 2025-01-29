@@ -19,7 +19,7 @@
 
     <div class="header">
         <h1 class="page-title">The Traffic Report
-            <button class="create-button" id="openButton">Open Modal</button>
+            <button class="create-button" id="openButton">Create Post</button>
         </h1>
     </div>
     <div class="row" id="feed-container">
@@ -59,8 +59,8 @@
                 <form>
                     <label style="padding-left:10px" for="new-comment">Write a comment...</label>
                     <textarea id="new-comment" name="new-comment" class="input-box-large"></textarea>
-                    <button id="submitComment" class="submitComment">Submit Comment</button>
                 </form>
+                <button id="submitComment" class="submitComment">Submit Comment</button>
             </div>
         </div>
 
@@ -84,72 +84,92 @@
 
         commentsModal.style.display = "none";
         creationModal.style.display = "none";
-        
-        fetch('http://127.0.0.1:8080/api/home', {
-            headers: {
-                "Content-Type": "application/json"
-            },
-            method: "GET",                
-        }).then(response => response.json(response.body).then((all_posts) => {
 
-            for(i=(all_posts.length)-1; i>=0; i--) {
-                let post = all_posts[i];
-                let current_post = document.createElement("button");
-                current_post.setAttribute("class", "current-post");
-                current_post.style["top"] = (10*post).toString();
-                let titleElement = document.createElement("h1")
-                titleElement.setAttribute("class", "postTitle");
-                titleElement.innerHTML = post.title;
-                let authorElement = document.createElement("p");
-                authorElement.setAttribute("class", "postAuthor");
-                authorElement.innerHTML = post.author;
-                let bodyElement = document.createElement("p");
-                bodyElement.setAttribute("class", "postBody");
-                bodyElement.innerHTML = post.body;
-                let dateElement = document.createElement("p");
-                dateElement.setAttribute("class", "postDate");
-                dateElement.innerHTML = new Date(post.date).toDateString();
-                let postBorderElement = document.createElement("div");
-                postBorderElement.setAttribute("class", "post-border");
+        all_posts = {};
 
-                
-                current_post.appendChild(titleElement);
-                current_post.appendChild(authorElement);
-                current_post.appendChild(dateElement);
-                current_post.appendChild(bodyElement);
+        function renderPost(post) {
+            let current_post = document.createElement("button");
+            current_post.setAttribute("class", "current-post");
+            current_post.style["top"] = (10*post).toString();
+            let titleElement = document.createElement("h1")
+            titleElement.setAttribute("class", "postTitle");
+            titleElement.innerHTML = post.title;
+            let authorElement = document.createElement("p");
+            authorElement.setAttribute("class", "postAuthor");
+            authorElement.innerHTML = post.author;
+            let bodyElement = document.createElement("p");
+            bodyElement.setAttribute("class", "postBody");
+            bodyElement.innerHTML = post.body;
+            let dateElement = document.createElement("p");
+            dateElement.setAttribute("class", "postDate");
+            dateElement.innerHTML = new Date(post.date).toDateString();
+            let postBorderElement = document.createElement("div");
+            postBorderElement.setAttribute("class", "post-border");
 
-                document.getElementById("feed-container").appendChild(current_post);
-                document.getElementById("feed-container").appendChild(postBorderElement);
+            
+            current_post.appendChild(titleElement);
+            current_post.appendChild(authorElement);
+            current_post.appendChild(dateElement);
+            current_post.appendChild(bodyElement);
 
-                current_post.onclick = function() {
-                    //clear modal of comments
-                    commentsModal.style.display = "block";
-                    openPost = post;
-                    post.comments.forEach((value) => {
-                        fetch('http://127.0.0.1:8080/api/comments/get?commentId=' + value.toString(), {
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            method: "GET",   
-                        }).then(response => response.json(response.body).then((comment) => {
-                            let current_comment = document.createElement("p");
-                            current_comment.setAttribute("class", "existing-comment");
-                            current_comment.innerHTML = comment.body;
+            document.getElementById("feed-container").appendChild(current_post);
+            document.getElementById("feed-container").appendChild(postBorderElement);
 
-                            document.getElementById("comment-modal-body").appendChild(current_comment);
-                        }));
-                    })
-                    
+            current_post.onclick = function() {
+                let existingComments = document.getElementsByClassName("existing-comment");
+                for (let i = existingComments.length - 1; i >= 0; i--) {
+                    existingComments[i].remove();
                 }
+                commentsModal.style.display = "block";
+                openPost = post;
+                post.comments.forEach((value) => {
+                    fetch('http://127.0.0.1:8080/api/comments/get?commentId=' + value.toString(), {
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        method: "GET",   
+                    }).then(response => response.json(response.body).then((comment) => {
+                        let current_comment = document.createElement("p");
+                        current_comment.setAttribute("class", "existing-comment");
+                        current_comment.innerHTML = comment.body;
+
+                        document.getElementById("comment-modal-body").appendChild(current_comment);
+                    }));
+                })
                 
             }
-            
+        }
 
-        }));
+        function renderPosts() {
+            let existingPosts = document.getElementsByClassName("current-post");
+            for (let i = existingPosts.length - 1; i >= 0; i--) {
+                existingPosts[i].remove();
+            }
+            let existingBorders = document.getElementsByClassName("post-border");
+            for (let i = existingBorders.length - 1; i >= 0; i--) {
+                existingBorders[i].remove();
+            }
+            for(i=(all_posts.length)-1; i>=0; i--) {
+                renderPost(all_posts[i]);
+            }
+        }
+        
+        function fetchPosts() {
+            fetch('http://127.0.0.1:8080/api/home', {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                method: "GET",                
+            }).then(response => response.json(response.body).then((updated_posts) => {
+                all_posts = updated_posts;
+                renderPosts();
+            }));
+        }
 
         submitComment.onclick = function() {
 
             if (openPost != null) {
+
                 fetch('http://127.0.0.1:8080/api/comments/post', {
                     headers: {
                         "Content-Type": "application/json"
@@ -159,19 +179,22 @@
                         body: commentBody.value,
                         postId: openPost.id
                     }),
-                    
                 })
+
+                fetchPosts();
+
+                commentsModal.style.display = "none";
+                commentBody.value = "";
+                
             }
             
         }
 
+        fetchPosts();
+
         commentBody.value = "";
         
         creationModal.style.display = "none";
-
-        
-
-        
 
         openButton.onclick = function() {
             creationModal.style.display = "block";
@@ -189,8 +212,18 @@
                     author: author.value,
                     body: postBody.value
                 }),
-                
             })
+
+            all_posts.push({
+                title: postTitle.value,
+                author: author.value,
+                body: postBody.value,
+                id: all_posts.length,
+                date: Date.now(),
+                comments: []
+            })
+
+            renderPosts();
 
             postTitle.value = "";
             author.value = "";

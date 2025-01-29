@@ -49,10 +49,6 @@ app.get('/css/styles.css', (req, res) => {
     res.status(200).sendFile(path.join(__dirname, 'styles.css'));
 })
 
-app.get('/api/posts/:id', (req, res) => {
-    res.status(200).send();
-});
-
 app.get('/api/home', (req, res) => {
     console.log(all_posts);
     res.status(200).json(all_posts);
@@ -112,11 +108,4 @@ app.post('/api/comments/post', (req, res) => {
 
 
 
-/* GET = retrieve data, POST = write new data, DELETE = delete junk, PUT = write update data
 
-CRUD = POST /drinks, PUT /drinks/605 (put doesn't risk repeat records)
-
-
-
-
-*/
