@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head class="header">
+    <!-- aiding responsiveness -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- add bootstrap to css functionality -->
+    <link href="http://127.0.0.1:8080/css/styles.css" rel="stylesheet">
+    
+    <title>The Traffic Report</title>
+    
+</head>
+<body class="page">
+
+    <div class="top-margin">
+
+    </div>
+
+    <div class="header">
+        <h1 class="page-title">The Traffic Report
+            <button class="create-button" id="openButton">Open Modal</button>
+        </h1>
+    </div>
+    <div class="row" id="feed-container">
+        <h2 class="h2">Feed</h2>
+    </div>
+
+   
+    <div id="createModal" class="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="closeButton" class="close">Publish</button>
+                <h2>Create Post</h2>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label for="post-title">Post Title</label><br>
+                    <input type="text" id="post-title" name="post-title" class="input-box-single"><br>
+                    <label for="author">Author Name</label><br>
+                    <input type="text" id="author" name="author" class="input-box-single"><br>
+                    <label for="post-body">Post Content</label><br>
+                    <textarea id="post-body" name="post-body" class="input-box-large"></textarea>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="commentsModal" class="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Comments</h2>
+            </div>
+            <div id="comment-modal-body" class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <form>
+                    <label style="padding-left:10px" for="new-comment">Write a comment...</label>
+                    <textarea id="new-comment" name="new-comment" class="input-box-large"></textarea>
+                    <button id="submitComment" class="submitComment">Submit Comment</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+   
+
+    
+
+    <script lang="js">
+
+        var openPost;
+
+        var openButton = document.getElementById("openButton");
+        var creationModal = document.getElementById("createModal");
+        var closeButton = document.getElementById("closeButton");
+        var postTitle = document.getElementById("post-title");
+        var author = document.getElementById("author");
+        var postBody = document.getElementById("post-body");
+        var submitComment = document.getElementById("submitComment");
+        var commentBody = document.getElementById("new-comment");
+
+        commentsModal.style.display = "none";
+        creationModal.style.display = "none";
+        
+        fetch('http://127.0.0.1:8080/api/home', {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: "GET",                
+        }).then(response => response.json(response.body).then((all_posts) => {
+
+            for(i=(all_posts.length)-1; i>=0; i--) {
+                let post = all_posts[i];
+                let current_post = document.createElement("button");
+                current_post.setAttribute("class", "current-post");
+                current_post.style["top"] = (10*post).toString();
+                let titleElement = document.createElement("h1")
+                titleElement.setAttribute("class", "postTitle");
+                titleElement.innerHTML = post.title;
+                let authorElement = document.createElement("p");
+                authorElement.setAttribute("class", "postAuthor");
+                authorElement.innerHTML = post.author;
+                let bodyElement = document.createElement("p");
+                bodyElement.setAttribute("class", "postBody");
+                bodyElement.innerHTML = post.body;
+                let dateElement = document.createElement("p");
+                dateElement.setAttribute("class", "postDate");
+                dateElement.innerHTML = new Date(post.date).toDateString();
+                let postBorderElement = document.createElement("div");
+                postBorderElement.setAttribute("class", "post-border");
+
+                
+                current_post.appendChild(titleElement);
+                current_post.appendChild(authorElement);
+                current_post.appendChild(dateElement);
+                current_post.appendChild(bodyElement);
+
+                document.getElementById("feed-container").appendChild(current_post);
+                document.getElementById("feed-container").appendChild(postBorderElement);
+
+                current_post.onclick = function() {
+                    //clear modal of comments
+                    commentsModal.style.display = "block";
+                    openPost = post;
+                    post.comments.forEach((value) => {
+                        fetch('http://127.0.0.1:8080/api/comments/get?commentId=' + value.toString(), {
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            method: "GET",   
+                        }).then(response => response.json(response.body).then((comment) => {
+                            let current_comment = document.createElement("p");
+                            current_comment.setAttribute("class", "existing-comment");
+                            current_comment.innerHTML = comment.body;
+
+                            document.getElementById("comment-modal-body").appendChild(current_comment);
+                        }));
+                    })
+                    
+                }
+                
+            }
+            
+
+        }));
+
+        submitComment.onclick = function() {
+
+            if (openPost != null) {
+                fetch('http://127.0.0.1:8080/api/comments/post', {
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        body: commentBody.value,
+                        postId: openPost.id
+                    }),
+                    
+                })
+            }
+            
+        }
+
+        commentBody.value = "";
+        
+        creationModal.style.display = "none";
+
+        
+
+        
+
+        openButton.onclick = function() {
+            creationModal.style.display = "block";
+        }
+
+        closeButton.onclick = function() {
+        
+            fetch('http://127.0.0.1:8080/api/admin/create', {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    title: postTitle.value,
+                    author: author.value,
+                    body: postBody.value
+                }),
+                
+            })
+
+            postTitle.value = "";
+            author.value = "";
+            postBody.value = "";
+            creationModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == creationModal) {
+                creationModal.style.display = "none";
+            } else if (event.target == commentsModal) {
+                commentsModal.style.display = "none";
+                commentBody.value = "";
+            }
+        }
+    </script>
+</body>
+</html>
