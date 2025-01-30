@@ -35,11 +35,11 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <label for="post-title">Post Title</label><br>
+                    <label class="form-label" for="post-title">Post Title</label><br>
                     <input type="text" id="post-title" name="post-title" class="input-box-single"><br>
-                    <label for="author">Author Name</label><br>
+                    <label class="form-label" for="author">Author Name</label><br>
                     <input type="text" id="author" name="author" class="input-box-single"><br>
-                    <label for="post-body">Post Content</label><br>
+                    <label class="form-label" for="post-body">Post Content</label><br>
                     <textarea id="post-body" name="post-body" class="input-box-large"></textarea>
                 </form>
             </div>
@@ -57,7 +57,7 @@
             </div>
             <div class="modal-footer">
                 <form>
-                    <label style="padding-left:10px" for="new-comment">Write a comment...</label>
+                    <label class="form-label" style="padding-left:10px" for="new-comment">Write a comment...</label>
                     <textarea id="new-comment" name="new-comment" class="input-box-large"></textarea>
                 </form>
                 <button id="submitComment" class="submitComment">Submit Comment</button>
@@ -185,7 +185,7 @@
 
                 commentsModal.style.display = "none";
                 commentBody.value = "";
-                
+
             }
             
         }

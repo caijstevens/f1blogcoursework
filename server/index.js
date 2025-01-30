@@ -4,6 +4,8 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
+module.exports = app;
+
 const corsOptions = {
     origin: "*"
 };
@@ -77,11 +79,6 @@ app.get('/api/comments/get', (req, res) => {
     }
 });
 
-/*{
-    postId: number
-    comment: string
-}
-*/
 
 app.post('/api/comments/post', (req, res) => {
     if (all_posts.length > req.body.postId) {
