@@ -52,7 +52,7 @@ app.get('/css/styles.css', (req, res) => {
 })
 
 app.get('/api/home', (req, res) => {
-    console.log(all_posts);
+    
     res.status(200).json(all_posts);
 });
 

@@ -288,3 +288,12 @@
 .existing-comment {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
+
+.input-box-single {
+    width: 80%
+}
+
+.input-box-large {
+    width: 80%;
+    height: 50px;
+}
